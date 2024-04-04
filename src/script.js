@@ -33,7 +33,11 @@ canvas.addEventListener('mousemove', (e) => {
     getActiveObject(currentCoor);
 
     // MODIFY OBJECT
-    if (drawState == 'translation') {
+    if (drawState == 'drag' || drawState == 'drag2') {
+        drawState = 'drag2';
+        let isMoving = objects[selectedObjectId].type == 'Square' || 'Rectangle'
+        objects[selectedObjectId].moveVertex(selectedVertexId, currentCoor, isMoving);
+    } else if (drawState == 'translation') {
         objects[selectedObjectId].translation(currentCoor);
 
     }
@@ -58,6 +62,7 @@ canvas.addEventListener('mouseup', (e) => {
     currentCoor = getMouseCoor(e);
     let lastObj = objects[objects.length - 1];
     if (drawState == '') {
+        
         if (hoveredObjectId != -1) {
           if (hoveredVertexId != -1) {
 
@@ -119,6 +124,7 @@ canvas.addEventListener('mouseup', (e) => {
             selectedVertexId = -1;
           })
         }
+
     } else if (drawState == 'selected') {
 
         if (hoveredObjectId != -1) {
@@ -142,7 +148,7 @@ canvas.addEventListener('mouseup', (e) => {
                         obj.centroid.isSelected = false;
                     }
                 })
-        }
+            }
         } else {
             objects.forEach((obj) => {
                 obj.vertices.forEach((vertex) => {
@@ -155,13 +161,31 @@ canvas.addEventListener('mouseup', (e) => {
             })
         }
    
+    } else if (drawState == 'drag2') {
+
+        drawState = '';
+
+    } else if (drawState == 'vertex-selected') {
+
+        if (hoveredVertexId == selectedVertexId){
+            drawState = 'drag';
+        } else { 
+            objects[hoveredObjectId].vertices[selectedVertexId].isSelected = false
+            selectedVertexId = hoveredVertexId
+            objects[hoveredObjectId].vertices[selectedVertexId].isSelected = true
+        } 
+
     } else if (drawState == 'rectangle') {
+
         lastObj.moveVertex(0, currentCoor);
         drawState = 'rectangle2';
     
     } else if (drawState == 'rectangle2') {
+
         drawState = '';
+
     }
+
     setDrawStatus();
     setPropertyDisplay();
 });
@@ -278,6 +302,12 @@ const setDrawStatus = () => {
     switch (drawState) {
         case '':
             draw_status.innerHTML = 'No action, click a button to draw';
+            break;
+        case 'drag':
+            draw_status.innerHTML = `Dragging object ${selectedObjectId} ...`;
+            break;
+        case 'drag2':
+            draw_status.innerHTML = `Dragging object ${selectedObjectId} vertex ${selectedVertexId} ...`;
             break;
         case 'translation':
             draw_status.innerHTML = `Translating object ${selectedObjectId}, double click to finish ...`;
