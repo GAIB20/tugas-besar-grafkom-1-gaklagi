@@ -1,44 +1,34 @@
-import { initBuffers } from "./init-buffers.js";
-import { drawScene } from "./draw-scene.js";
+const gl = canvas.getContext("webgl");
+gl.viewport(0, 0, canvas.width, canvas.height);
+gl.clearColor(0.85, 0.85, 0.85, 1.0); // light gray
 
-main();
 
-//
-// start here
-//
-function main() {
-  
-  const canvas = document.querySelector("#glcanvas");
-  // Initialize the GL context
-  const gl = canvas.getContext("webgl");
 
-  const vsSource = `
-    attribute vec4 aVertexPosition;
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-    void main() {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-    }
-  `;
+const vsSource = `
+  attribute vec4 vPosition;
+  attribute vec4 vColor;
+  varying vec4 fColor;
+  void main(){
+    gl_Position = vPosition;
+    fColor = vColor;
+  }
+`;
 
-  const fsSource = `
-    void main() {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    }
-  `;
+const fsSource = `
+  precision mediump float;
+  varying vec4 fColor;
+  void main(){
+    gl_FragColor = fColor;
+  }
+`;
 
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 
-  const programInfo = {
-    program: shaderProgram,
-    attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-    },
-    uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
-    },
-  };
+gl.useProgram(shaderProgram);
+
+render();
+
+function render() {
 
   // Only continue if WebGL is available and working
   if (gl === null) {
@@ -48,17 +38,15 @@ function main() {
     return;
   }
 
-  // Set clear color to black, fully opaque
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
   // Clear the color buffer with specified clear color
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  // Here's where we call the routine that builds all the
-  // objects we'll be drawing.
-  const buffers = initBuffers(gl);
+  // // render each objects available
+  // objects.forEach((obj) => {
+  //   obj.render(gl);
+  // });
 
-  // Draw the scene
-  drawScene(gl, programInfo, buffers);
+  // window.requestAnimationFrame(render);
 }
 
 function initShaderProgram(gl, vsSource, fsSource) {
