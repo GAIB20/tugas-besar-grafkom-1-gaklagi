@@ -425,3 +425,11 @@ rectangle_width_slider.addEventListener('input', (e) => {
 
 // SPECIAL METHOD POLYGON
 const sm_polygon = document.getElementById('special-method-polygon');
+const delete_vertex_button = document.getElementById('delete-vertex-btn');
+
+delete_vertex_button.addEventListener('click', (e) => {
+    if (selectedObjectId != -1) {
+      objects[selectedObjectId].deleteVertex(selectedVertexId)
+      drawState=''
+    }
+});
