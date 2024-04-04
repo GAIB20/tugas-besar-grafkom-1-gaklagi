@@ -433,3 +433,16 @@ delete_vertex_button.addEventListener('click', (e) => {
       drawState=''
     }
 });
+
+// ROTATION METHOD
+const rotation_degree_slider = document.getElementById('rotation-degree-slider');
+const rotation_degree_value = document.getElementById('rotation-degree-value');
+
+rotation_degree_slider.addEventListener('input', (e) => {
+    const degree = e.target.value;
+  
+    if (selectedObjectId != -1) {
+      objects[selectedObjectId].rotate(degree) 
+    }
+    rotation_degree_value.innerHTML = `Rotation degree: ${degree}`  
+  });

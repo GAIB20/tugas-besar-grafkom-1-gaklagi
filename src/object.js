@@ -105,7 +105,23 @@ class Model {
           vertex.coor[0] = dilationFactor * (vertex.coor[0] - centroidX) + centroidX;
           vertex.coor[1] = dilationFactor * (vertex.coor[1] - centroidY) + centroidY;
         });  
-      }
+    }
+
+    rotate = (newAngle, isMoving = false) => {
+      
+        const angleInDegrees = newAngle - this.angle
+        this.angle = isMoving ? this.angle : newAngle
+        const angleInRadians = angleInDegrees * Math.PI / 180
+        
+        this.vertices.forEach((vertex) => {
+          var oldX = vertex.coor[0] - this.centroid.coor[0]
+          var oldY = vertex.coor[1] - this.centroid.coor[1]
+          
+          vertex.coor[0] = this.centroid.coor[0] + (oldX * Math.cos(angleInRadians) - oldY * Math.sin(angleInRadians))
+          vertex.coor[1] = this.centroid.coor[1] + (oldX * Math.sin(angleInRadians) + oldY * Math.cos(angleInRadians))
+        })
+    }
+    
 }
 
 class Rectangle extends Model {
