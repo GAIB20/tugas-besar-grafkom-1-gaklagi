@@ -92,6 +92,20 @@ class Model {
         this.setCentroid();
     }
 
+    dilation = (vertexId, coor) => {
+        const startPointY = this.vertices[vertexId].coor[1];
+        const endPointY = coor[1];
+    
+        const centroidX = this.centroid.coor[0];
+        const centroidY = this.centroid.coor[1];    
+    
+        const dilationFactor = (endPointY - centroidY)/(startPointY - centroidY);
+    
+        this.vertices.forEach((vertex) => {
+          vertex.coor[0] = dilationFactor * (vertex.coor[0] - centroidX) + centroidX;
+          vertex.coor[1] = dilationFactor * (vertex.coor[1] - centroidY) + centroidY;
+        });  
+      }
 }
 
 class Rectangle extends Model {

@@ -39,7 +39,8 @@ canvas.addEventListener('mousemove', (e) => {
         objects[selectedObjectId].moveVertex(selectedVertexId, currentCoor, isMoving);
     } else if (drawState == 'translation') {
         objects[selectedObjectId].translation(currentCoor);
-
+    } else if (drawState == 'dilation') {
+        objects[selectedObjectId].dilation(selectedVertexId, currentCoor);
     }
       
     // DRAW NEW OBJECT
@@ -62,7 +63,7 @@ canvas.addEventListener('mouseup', (e) => {
     currentCoor = getMouseCoor(e);
     let lastObj = objects[objects.length - 1];
     if (drawState == '') {
-        
+
         if (hoveredObjectId != -1) {
           if (hoveredVertexId != -1) {
 
@@ -128,6 +129,34 @@ canvas.addEventListener('mouseup', (e) => {
     } else if (drawState == 'selected') {
 
         if (hoveredObjectId != -1) {
+
+            // SELECT VERTEX TO DILATE
+            if (hoveredVertexId != -1) {
+                if (dist(currentCoor, objects[hoveredObjectId].vertices[hoveredVertexId].coor) < epsilon) {
+                  let clickedObject = objects[hoveredObjectId];
+                  let clickedVertex = clickedObject.vertices[hoveredVertexId]
+                  clickedVertex.isSelected = !clickedVertex.isSelected;
+                  selectedObjectId = hoveredObjectId;
+                  setPropertyDisplay();
+                  selectedVertexId = hoveredVertexId;
+        
+                  if (clickedVertex.isSelected) {
+                    
+                    drawState = 'dilation';
+        
+                    objects.forEach((obj) => {
+                      obj.vertices.forEach((vertex) => {
+                        
+                        if (vertex != clickedVertex) {
+                          vertex.isSelected = false
+                        }
+                      })
+                      obj.centroid.isSelected = false;
+                    })
+                  }
+                }
+            }
+
             // SELECT CENTROID AGAIN TO TRANSLATE
             if ((dist(currentCoor, objects[hoveredObjectId].centroid.coor) < epsilon) ||
                 (dist(currentCoor, objects[selectedObjectId].centroid.coor) < epsilon)) {
@@ -149,6 +178,7 @@ canvas.addEventListener('mouseup', (e) => {
                     }
                 })
             }
+
         } else {
             objects.forEach((obj) => {
                 obj.vertices.forEach((vertex) => {
@@ -161,6 +191,10 @@ canvas.addEventListener('mouseup', (e) => {
             })
         }
    
+    } else if (drawState == 'dilation') {
+
+        drawState = '';
+
     } else if (drawState == 'drag2') {
 
         drawState = '';
@@ -312,6 +346,9 @@ const setDrawStatus = () => {
         case 'translation':
             draw_status.innerHTML = `Translating object ${selectedObjectId}, double click to finish ...`;
             break;
+        case 'dilation':
+            draw_status.innerHTML = `Dilating object ${selectedObjectId}, click to finish ...`;
+            break;
         case 'rectangle':
             draw_status.innerHTML = 'Drawing rectangle, choose first vertex ...';
             break;
@@ -320,7 +357,7 @@ const setDrawStatus = () => {
             break;
         default:
             if (selectedObjectId != -1) {
-                draw_status.innerHTML = `Modifying object ${selectedObjectId}, click center again to translate`;
+                draw_status.innerHTML = `Modifying object ${selectedObjectId}, click center again to translate or click vertex to dilate`;
             } else {
                 draw_status.innerHTML = 'No action, click a button to draw';
             }        
