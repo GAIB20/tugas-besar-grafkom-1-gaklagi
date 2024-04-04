@@ -11,15 +11,19 @@ const canvas = document.getElementById('canvas');
 const draw_buttons = document.querySelectorAll('.draw-button');
 const draw_status = document.getElementById('draw-status');
 const current_coor = document.getElementById('current-coor');
+const active_object = document.getElementById('active-object');
 
 // MOUSE LISTENER
 canvas.addEventListener('dblclick', (e) => {
     setDrawStatus();
-  });
+    setPropertyDisplay();
+});
 
 canvas.addEventListener('mousemove', (e) => {
     currentCoor = getMouseCoor(e);
     let lastObj = objects[objects.length - 1];
+
+    getActiveObject(currentCoor);
       
     // DRAW NEW OBJECT
     if (drawState == 'rectangle2') {
@@ -34,12 +38,87 @@ canvas.addEventListener('mousemove', (e) => {
     }
   
     setDrawStatus();
-  });
+    setPropertyDisplay();
+});
 
-  canvas.addEventListener('mouseup', (e) => {
+canvas.addEventListener('mouseup', (e) => {
     currentCoor = getMouseCoor(e);
     let lastObj = objects[objects.length - 1];
-    if (drawState == 'rectangle') {
+    if (drawState == '') {
+        if (hoveredObjectId != -1) {
+          if (hoveredVertexId != -1) {
+
+          // SELECT VERTEX
+            if (dist(currentCoor, objects[hoveredObjectId].vertices[hoveredVertexId].coor) < epsilon) {
+              let clickedObject = objects[hoveredObjectId];
+              let clickedVertex = clickedObject.vertices[hoveredVertexId]
+              clickedVertex.isSelected = !clickedVertex.isSelected;
+              selectedObjectId = hoveredObjectId;
+              setPropertyDisplay();
+              selectedVertexId = hoveredVertexId;
+    
+              if (clickedVertex.isSelected) {
+                drawState = 'vertex-selected';
+    
+                objects.forEach((obj) => {
+                  obj.vertices.forEach((vertex) => {
+                    if (vertex != clickedVertex) {
+                      vertex.isSelected = false
+                    }
+                  })
+                  obj.centroid.isSelected = false;
+                })
+              }
+              return;
+            }
+          }
+    
+          // SELECT CENTROID
+          if ((dist(currentCoor, objects[hoveredObjectId].centroid.coor) < epsilon) ||
+              (dist(currentCoor, objects[selectedObjectId].centroid.coor) < epsilon)) {
+            let clickedObject = objects[hoveredObjectId];
+            clickedObject.centroid.isSelected = !clickedObject.centroid.isSelected;
+            selectedObjectId = hoveredObjectId;
+            setPropertyDisplay();
+            selectedVertexId = -1;
+            console.log(clickedObject.centroid.isSelected)
+    
+            //drawState = 'translation';
+            drawState = 'selected'
+    
+            objects.forEach((obj) => {
+              obj.vertices.forEach((vertex) => {
+                vertex.isSelected = false
+              })
+              if (obj != clickedObject) {
+                obj.centroid.isSelected = false;
+              }
+            })
+          }
+        } else {
+          objects.forEach((obj) => {
+            obj.vertices.forEach((vertex) => {
+              vertex.isSelected = false;
+            })
+            obj.centroid.isSelected = false;
+            selectedObjectId = -1;
+            setPropertyDisplay();
+            selectedVertexId = -1;
+          })
+        }
+    } else if (drawState == 'selected') {
+
+        objects.forEach((obj) => {
+            obj.vertices.forEach((vertex) => {
+              vertex.isSelected = false;
+            })
+            obj.centroid.isSelected = false;
+            selectedObjectId = -1;
+            setPropertyDisplay();
+            selectedVertexId = -1;
+          })
+   
+    } else if (drawState == 'rectangle') {
         lastObj.moveVertex(0, currentCoor);
         drawState = 'rectangle2';
     
@@ -47,7 +126,97 @@ canvas.addEventListener('mousemove', (e) => {
         drawState = '';
     }
     setDrawStatus();
-  });
+    setPropertyDisplay();
+});
+
+const getActiveObject = (currentCoor) => {
+    let isExist = false;
+  
+    objects.forEach((obj) => {
+      // Hover or Click Vertices
+      obj.vertices.forEach((vertex) => {
+        if (dist(vertex.coor, currentCoor) < epsilon) {
+          if (hoveredObjectId == -1) {
+            hoveredObjectId = obj.id;
+            hoveredVertexId = vertex.id;
+            vertex.isHovered = true;
+            obj.centroid.isHovered = true;
+  
+          } else if (hoveredObjectId == obj.id) {
+            
+          } else {
+            let oldObj = objects[hoveredObjectId];
+            let oldVertex = oldObj.vertices[hoveredVertexId];
+            if (dist(vertex.coor, currentCoor) < dist(oldVertex.coor, currentCoor)) {
+              hoveredObjectId = obj.id;
+              hoveredVertexId = vertex.id;
+              vertex.isHovered = true;
+              obj.centroid.isHovered = true;
+              oldVertex.isHovered = false;
+              oldObj.centroid.isHovered = false;
+            }
+          }
+          isExist = true;
+        }
+      });
+  
+      // Hover or Click Objects
+      if (dist(obj.centroid.coor, currentCoor) < epsilon) {
+        if (hoveredObjectId == -1) {
+          hoveredObjectId = obj.id;
+          hoveredVertexId = -1;
+          obj.centroid.isHovered = true;
+        } else if (hoveredObjectId == obj.id) {
+  
+        } else {
+          let oldObj = objects[hoveredObjectId];
+          if (dist(obj.centroid.coor, currentCoor) < dist(oldObj.centroid.coor, currentCoor)) {
+            hoveredObjectId = obj.id;
+            hoveredVertexId = -1;
+            obj.centroid.isHovered = true;
+            oldObj.centroid.isHovered = false;
+          }
+        }
+        isExist = true;
+      }
+    });
+  
+    if (!isExist) {
+      hoveredObjectId = -1;
+      hoveredVertexId = -1;
+  
+      objects.forEach((obj) => {
+        obj.vertices.forEach((vertex) => {
+          vertex.isHovered = false;
+        });
+        obj.centroid.isHovered = false;
+      });
+    }
+  };
+
+// OBJECT PROPERTY MODIFIER
+const setPropertyDisplay = () => {
+    const setter = (line, square, rectangle, polygon) => {
+        sm_rectangle.style.display = rectangle;
+    }
+
+    if (selectedObjectId != -1) {
+      if (objects[selectedObjectId].getModelName() == 'Rectangle') {
+        setter('none', 'none', 'block', 'none');
+        rectangle_length_slider.value = objects[selectedObjectId].getLength();
+        rectangle_length_value.innerHTML = `Length: ${rectangle_length_slider.value}`
+        rectangle_width_slider.value = objects[selectedObjectId].getWidth();
+        rectangle_width_value.innerHTML = `Width: ${rectangle_width_slider.value}`
+      } else {
+        setter('none', 'none', 'none', 'none');
+        active_object.innerHTML = 'Object unknown';
+      }
+      active_object.innerHTML = `[${selectedObjectId}] ${objects[selectedObjectId].getModelName()}`;
+    } else {
+      setter('none', 'none', 'none', 'none');
+      active_object.innerHTML = 'No object selected';
+    }
+}
 
 // DRAW ACTIONS
 draw_buttons.forEach((button) => {
@@ -80,7 +249,40 @@ const setDrawStatus = () => {
         draw_status.innerHTML = 'Drawing rectangle, click to finish ...';
         break;
       default:
-        draw_status.innerHTML = 'No action, click a button to draw';
+        if (selectedObjectId != -1) {
+            draw_status.innerHTML = `Modifying object ${selectedObjectId}`;
+        } else {
+            draw_status.innerHTML = 'No action, click a button to draw';
+        }        
         break;
     }
+}
+
+// SPECIAL METHOD RECTANGLE
+const sm_rectangle = document.getElementById('special-method-rectangle');
+const rectangle_length_slider = document.getElementById('rectangle-length-slider');
+const rectangle_length_value = document.getElementById('rectangle-length-value');
+const rectangle_width_slider = document.getElementById('rectangle-width-slider');
+const rectangle_width_value = document.getElementById('rectangle-width-value');
+
+rectangle_length_slider.addEventListener('input', (e) => {
+  const length = parseFloat(e.target.value);
+  rectangle_length_value.innerHTML = `Length: ${length}`;
+  if (selectedObjectId != -1) {
+    if (objects[selectedObjectId].getModelName() == 'Rectangle') {
+      objects[selectedObjectId].setLength(length);
+    }
   }
+  console.log(objects[selectedObjectId].getLength());
+});
+
+rectangle_width_slider.addEventListener('input', (e) => {
+  const width = parseFloat(e.target.value);
+  rectangle_width_value.innerHTML = `Width: ${width}`;
+  if (selectedObjectId != -1) {
+    if (objects[selectedObjectId].getModelName() == 'Rectangle') {
+      objects[selectedObjectId].setWidth(width);
+    }
+  }
+  console.log(objects[selectedObjectId].getWidth());
+});

@@ -34,8 +34,21 @@
           <p id="draw-status">...</p>
         </div>
 
-        <div> <!-- Can be removed later -->
+        <div> 
           <p>Current coordinates: <span id="current-coor">[]</span></p>
+          <p>Active object: <span id="active-object">No object selected</span></p>
+        </div>
+
+        <div id="special-methods">
+          <div id="special-method-rectangle" style="display: none;">
+            <h3>Rectangle Method</h3>
+            <div style="display: inline-flex">
+              <p id="rectangle-length-value">Side Length: </p><input type="range" min="0.0001" max="3" step=0.00001 value="0" id="rectangle-length-slider" />
+            </div>
+            <div style="display: inline-flex">
+              <p id="rectangle-width-value">Side Length: </p><input type="range" min="0.0001" max="3" step=0.00001 value="0" id="rectangle-width-slider" />
+            </div>
+          </div>
         </div>
 
       </div>
