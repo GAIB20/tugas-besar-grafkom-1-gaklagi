@@ -82,6 +82,16 @@ class Model {
         this.centroid.render(gl, vBuffer, vPosition, cBuffer, vColor);
     }
 
+    translation = (coor) => {
+        let dx = coor[0] - this.centroid.coor[0];
+        let dy = coor[1] - this.centroid.coor[1];
+        this.vertices.forEach((v) => {
+          v.coor[0] += dx;
+          v.coor[1] += dy;
+        });
+        this.setCentroid();
+    }
+
 }
 
 class Rectangle extends Model {

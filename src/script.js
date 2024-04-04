@@ -15,6 +15,13 @@ const active_object = document.getElementById('active-object');
 
 // MOUSE LISTENER
 canvas.addEventListener('dblclick', (e) => {
+
+    if (drawState == 'translation') {
+        drawState = '';
+        selectedObjectId = -1;
+        selectedVertexId = -1;
+    }
+
     setDrawStatus();
     setPropertyDisplay();
 });
@@ -24,6 +31,12 @@ canvas.addEventListener('mousemove', (e) => {
     let lastObj = objects[objects.length - 1];
 
     getActiveObject(currentCoor);
+
+    // MODIFY OBJECT
+    if (drawState == 'translation') {
+        objects[selectedObjectId].translation(currentCoor);
+
+    }
       
     // DRAW NEW OBJECT
     if (drawState == 'rectangle2') {
@@ -108,15 +121,39 @@ canvas.addEventListener('mouseup', (e) => {
         }
     } else if (drawState == 'selected') {
 
-        objects.forEach((obj) => {
-            obj.vertices.forEach((vertex) => {
-              vertex.isSelected = false;
+        if (hoveredObjectId != -1) {
+            // SELECT CENTROID AGAIN TO TRANSLATE
+            if ((dist(currentCoor, objects[hoveredObjectId].centroid.coor) < epsilon) ||
+                (dist(currentCoor, objects[selectedObjectId].centroid.coor) < epsilon)) {
+                let clickedObject = objects[hoveredObjectId];
+                clickedObject.centroid.isSelected = !clickedObject.centroid.isSelected;
+                selectedObjectId = hoveredObjectId;
+                setPropertyDisplay();
+                selectedVertexId = -1;
+                console.log(clickedObject.centroid.isSelected)
+
+                drawState = 'translation';
+
+                objects.forEach((obj) => {
+                    obj.vertices.forEach((vertex) => {
+                        vertex.isSelected = false
+                    })
+                    if (obj != clickedObject) {
+                        obj.centroid.isSelected = false;
+                    }
+                })
+        }
+        } else {
+            objects.forEach((obj) => {
+                obj.vertices.forEach((vertex) => {
+                vertex.isSelected = false;
+                })
+                obj.centroid.isSelected = false;
+                selectedObjectId = -1;
+                setPropertyDisplay();
+                selectedVertexId = -1;
             })
-            obj.centroid.isSelected = false;
-            selectedObjectId = -1;
-            setPropertyDisplay();
-            selectedVertexId = -1;
-          })
+        }
    
     } else if (drawState == 'rectangle') {
         lastObj.moveVertex(0, currentCoor);
@@ -239,22 +276,25 @@ const drawAction = (model) => {
 
 const setDrawStatus = () => {
     switch (drawState) {
-      case '':
-        draw_status.innerHTML = 'No action, click a button to draw';
-        break;
-      case 'rectangle':
-        draw_status.innerHTML = 'Drawing rectangle, choose first vertex ...';
-        break;
-      case 'rectangle2':
-        draw_status.innerHTML = 'Drawing rectangle, click to finish ...';
-        break;
-      default:
-        if (selectedObjectId != -1) {
-            draw_status.innerHTML = `Modifying object ${selectedObjectId}`;
-        } else {
+        case '':
             draw_status.innerHTML = 'No action, click a button to draw';
-        }        
-        break;
+            break;
+        case 'translation':
+            draw_status.innerHTML = `Translating object ${selectedObjectId}, double click to finish ...`;
+            break;
+        case 'rectangle':
+            draw_status.innerHTML = 'Drawing rectangle, choose first vertex ...';
+            break;
+        case 'rectangle2':
+            draw_status.innerHTML = 'Drawing rectangle, click to finish ...';
+            break;
+        default:
+            if (selectedObjectId != -1) {
+                draw_status.innerHTML = `Modifying object ${selectedObjectId}, click center again to translate`;
+            } else {
+                draw_status.innerHTML = 'No action, click a button to draw';
+            }        
+            break;
     }
 }
 
