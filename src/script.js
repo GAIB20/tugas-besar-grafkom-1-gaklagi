@@ -469,4 +469,14 @@ change_color_input.addEventListener('input', (e)=>{
         objects[selectedObjectId].vertices[selectedVertexId].color = rgbaColor;
       }
     }
-  })
+})
+
+// FITUR TAMBAHAN : ANIMATE
+const animate_button = document.getElementById('animate-button');
+
+animate_button.addEventListener('click', (e) =>{
+    if (selectedObjectId != -1){
+      objects[selectedObjectId].animate()
+      
+    }
+})
