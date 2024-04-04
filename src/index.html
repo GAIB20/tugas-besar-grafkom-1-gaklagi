@@ -10,6 +10,7 @@
       integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
       crossorigin="anonymous"
       defer></script>
+    <script src="object.js" type="text/javascript"></script>
   </head>
 
   <body>
@@ -28,12 +29,20 @@
           <button class="draw-button" id="rectangle">Rectangle</button>
           <button class="draw-button" id="polygon">Polygon</button>
         </div>
+
+        <div>
+          <p id="draw-status">...</p>
+        </div>
+
+        <div> <!-- Can be removed later -->
+          <p>Current coordinates: <span id="current-coor">[]</span></p>
+        </div>
+
       </div>
 
-      <script src="webGL.js" type="module"></script>
-      <script src="object.js" type="module"></script>
-      <script src="script.js" type="module"></script>
-      <script src="utils.js" type="module"></script>
+      <script src="script.js" type="text/javascript"></script>
+      <script src="webGL.js" type="text/javascript"></script>
+      <script src="utils.js" type="text/javascript"></script>
   
     </div>
   </body>

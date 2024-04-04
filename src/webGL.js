@@ -2,8 +2,6 @@ const gl = canvas.getContext("webgl");
 gl.viewport(0, 0, canvas.width, canvas.height);
 gl.clearColor(0.85, 0.85, 0.85, 1.0); // light gray
 
-
-
 const vsSource = `
   attribute vec4 vPosition;
   attribute vec4 vColor;
@@ -22,9 +20,9 @@ const fsSource = `
   }
 `;
 
-const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+const program = initShaderProgram(gl);
 
-gl.useProgram(shaderProgram);
+gl.useProgram(program);
 
 render();
 
@@ -42,14 +40,14 @@ function render() {
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // // render each objects available
-  // objects.forEach((obj) => {
-  //   obj.render(gl);
-  // });
+  objects.forEach((obj) => {
+    obj.render(gl);
+  });
 
-  // window.requestAnimationFrame(render);
+  window.requestAnimationFrame(render);
 }
 
-function initShaderProgram(gl, vsSource, fsSource) {
+function initShaderProgram(gl) {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 
