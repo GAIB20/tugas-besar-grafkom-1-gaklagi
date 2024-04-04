@@ -446,3 +446,27 @@ rotation_degree_slider.addEventListener('input', (e) => {
     }
     rotation_degree_value.innerHTML = `Rotation degree: ${degree}`  
   });
+
+// CHANGE COLOR METHOD
+const change_color_input = document.getElementById('change-color-input');
+
+change_color_input.addEventListener('input', (e)=>{
+    if (selectedObjectId != -1) {
+      
+      hexColor = e.target.value
+  
+      var rgbaColor = [1]
+      const [r, g, b] = hexColor.match(/\w\w/g).map(x => parseInt(x, 16)/256);
+      rgbaColor.unshift(b)
+      rgbaColor.unshift(g)
+      rgbaColor.unshift(r)
+    
+      if (selectedVertexId === -1) {
+        objects[selectedObjectId].vertices.forEach(vertex =>{
+          vertex.color = rgbaColor
+        })
+      } else {
+        objects[selectedObjectId].vertices[selectedVertexId].color = rgbaColor;
+      }
+    }
+  })
