@@ -480,3 +480,25 @@ animate_button.addEventListener('click', (e) =>{
       
     }
 })
+
+// SAVE AND LOAD OBJECTS
+const save_objects_button = document.getElementById('save-objects-button');
+const load_objects_button = document.getElementById('load-objects-button');
+const file = document.getElementById('file');
+var filePath = '';
+
+save_objects_button.addEventListener('click', (e) => {
+    console.log(objects);
+    const json = JSON.stringify(objects);
+    saveToFile(json, 'objects.json');
+})
+
+file.addEventListener("change", function(event) {
+    filePath = file.value.split("\\").pop();
+});
+  
+load_objects_button.addEventListener('click', (e) => {
+    if (filePath != '') {
+      loadObjectsFromJsonFileAndAddToCanvas(objects, '../test/' + filePath);
+    }
+})

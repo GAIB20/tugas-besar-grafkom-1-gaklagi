@@ -20,3 +20,36 @@ function flatten(v) {
   
   return floats;
 }
+
+function saveToFile(json, fileName) {
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+  
+function loadObjectsFromJsonFileAndAddToCanvas(array, filePath) {
+    // Load the JSON file
+    fetch(filePath)
+      .then(response => response.json())
+      .then(objects => {
+        // Add each object to the canvas
+        objects.forEach(obj => {
+            if (obj.type == 'Rectangle') {
+                const newObject = new Rectangle(obj.id);
+                newObject.setAtrributes(obj.id, obj.vertices, obj.angle, obj.centroid);
+                array.push(newObject);
+    
+            } else if (obj.type == 'Polygon') {
+                const newObject = new Polygon(obj.id);
+                newObject.setAtrributes(obj.id, obj.vertices, obj.angle, obj.centroid);
+                array.push(newObject);
+    
+            }
+        });
+      })
+      .catch(error => console.error(error));
+}
