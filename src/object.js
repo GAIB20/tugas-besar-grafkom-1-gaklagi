@@ -273,3 +273,75 @@ class Rectangle extends Model {
       this.renderDot(gl, vBuffer, vPosition, cBuffer, vColor)
     }
   }
+
+class Polygon extends Model {
+    constructor(id){
+      super(id);
+      this.type = 'Polygon';
+      this.vertices.push(new Point([0, 0], [0, 0, 0, 1], 0));
+    }
+  
+    setAtrributes = (id, vertices, angle, centroid) => {
+      this.id = id;
+  
+      let count = 0;
+      vertices.forEach(v => {
+        if (count == 0) {
+          this.vertices.coor = v.coor;
+          this.vertices.color = v.color;  
+        } else {
+          this.vertices.push(new Point(v.coor, v.color));
+        }
+        count++;
+      });
+  
+      this.angle = angle;
+      this.centroid.coor = centroid.coor;
+      this.centroid.color = centroid.color;
+      this.centroid.id = centroid.id;
+      this.centroid.isCentroid = centroid.isCentroid;
+    }
+  
+    isFirstVertex = () => {
+      return this.vertices.length === 1;
+    }
+  
+    deleteVertex = (id) => {
+      this.vertices.splice(id, 1);
+      this.setCentroid();
+      for (let i = 0; i < this.vertices.length; i++) {
+        this.vertices[i].id = i;
+      }
+    }
+  
+    render = (gl) => {
+      const verticesCoor = [];
+      const verticesColors = [];
+  
+      this.vertices.forEach((v) => {
+        verticesCoor.push(v.coor);
+        verticesColors.push(v.color);
+      });
+  
+      const vBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, flatten(verticesCoor), gl.STATIC_DRAW);
+      
+  
+      const vPosition = gl.getAttribLocation(program, 'vPosition');
+      gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(vPosition);
+      
+      var cBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, flatten(verticesColors), gl.STATIC_DRAW);
+  
+      const vColor = gl.getAttribLocation(program, 'vColor');
+      gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(vColor);
+  
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, verticesCoor.length);
+  
+      this.renderDot(gl, vBuffer, vPosition, cBuffer, vColor)
+    }
+}

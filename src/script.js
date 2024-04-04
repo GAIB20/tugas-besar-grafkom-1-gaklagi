@@ -16,7 +16,10 @@ const active_object = document.getElementById('active-object');
 // MOUSE LISTENER
 canvas.addEventListener('dblclick', (e) => {
 
-    if (drawState == 'translation') {
+    if (drawState == 'polygon2') {
+        objects[objects.length - 1].removeLastTwoVertices();
+        drawState = '';
+    } else if (drawState == 'translation') {
         drawState = '';
         selectedObjectId = -1;
         selectedVertexId = -1;
@@ -53,6 +56,8 @@ canvas.addEventListener('mousemove', (e) => {
         lastObj.moveVertex(1, [startPointX, endPointY])
         lastObj.moveVertex(2, [endPointX, startPointY])
         lastObj.moveVertex(3, currentCoor)
+    } else if (drawState =='polygon2') {
+        lastObj.moveVertex(lastObj.vertices.length - 1, currentCoor);
     }
   
     setDrawStatus();
@@ -218,6 +223,19 @@ canvas.addEventListener('mouseup', (e) => {
 
         drawState = '';
 
+    } else if (drawState == 'polygon') {
+
+        if (lastObj.isFirstVertex) {
+            lastObj.moveVertex(0, currentCoor);
+        }
+        lastObj.addVertex(currentCoor, [0, 0, 0, 1]);
+        drawState = 'polygon2';
+
+    } else if (drawState == 'polygon2') {
+
+        lastObj.moveVertex(lastObj.vertices.length - 1, currentCoor);
+        lastObj.addVertex(currentCoor, [0, 0, 0, 1]);
+
     }
 
     setDrawStatus();
@@ -293,6 +311,7 @@ const getActiveObject = (currentCoor) => {
 const setPropertyDisplay = () => {
     const setter = (line, square, rectangle, polygon) => {
         sm_rectangle.style.display = rectangle;
+        sm_polygon.style.display = polygon;
     }
 
     if (selectedObjectId != -1) {
@@ -302,6 +321,8 @@ const setPropertyDisplay = () => {
         rectangle_length_value.innerHTML = `Length: ${rectangle_length_slider.value}`
         rectangle_width_slider.value = objects[selectedObjectId].getWidth();
         rectangle_width_value.innerHTML = `Width: ${rectangle_width_slider.value}`
+      } else if (objects[selectedObjectId].getModelName() == 'Polygon') {
+        setter('none', 'none', 'none', 'block');
       } else {
         setter('none', 'none', 'none', 'none');
         active_object.innerHTML = 'Object unknown';
@@ -326,6 +347,8 @@ const drawAction = (model) => {
       drawState = model;
       if (model == 'rectangle') {
         objects.push(new Rectangle(objects.length));
+      } else if (model == 'polygon') {
+        objects.push(new Polygon(objects.length));
       }
     } else {
       draw_status.innerHTML = 'Please finish drawing the previous object';
@@ -354,6 +377,12 @@ const setDrawStatus = () => {
             break;
         case 'rectangle2':
             draw_status.innerHTML = 'Drawing rectangle, click to finish ...';
+            break;
+        case 'polygon':
+            draw_status.innerHTML = 'Drawing polygon, choose first vertex ...';
+            break;
+        case 'polygon2':
+            draw_status.innerHTML = 'Drawing polygon, click to add vertex or double click to finish ...';
             break;
         default:
             if (selectedObjectId != -1) {
@@ -393,3 +422,6 @@ rectangle_width_slider.addEventListener('input', (e) => {
   }
   console.log(objects[selectedObjectId].getWidth());
 });
+
+// SPECIAL METHOD POLYGON
+const sm_polygon = document.getElementById('special-method-polygon');
