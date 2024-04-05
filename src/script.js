@@ -58,6 +58,29 @@ canvas.addEventListener('mousemove', (e) => {
         lastObj.moveVertex(3, currentCoor)
     } else if (drawState =='polygon2') {
         lastObj.moveVertex(lastObj.vertices.length - 1, currentCoor);
+    } else if (drawState == 'square2') {
+      startPointX = lastObj.vertices[0].coor[0];
+      startPointY = lastObj.vertices[0].coor[1];
+      endPointX = currentCoor[0];
+      endPointY = currentCoor[1];
+      console.log("start x: "+ startPointX);
+      console.log("start y: "+startPointY);
+      console.log("end x: "+currentCoor[0]);
+      console.log("end y: "+currentCoor[1]);
+
+      if (Math.abs(startPointX-endPointX) > Math.abs(startPointY - endPointY)){
+        lastObj.moveVertex(1, [startPointX, endPointX])
+        lastObj.moveVertex(2, [endPointX, endPointX])
+        lastObj.moveVertex(3, currentCoor)
+      }
+      else {
+        lastObj.moveVertex(1, [startPointX, endPointY])
+        lastObj.moveVertex(2, [endPointY, startPointY])
+        lastObj.moveVertex(3, currentCoor)
+      }
+      // lastObj.moveVertex(1, [startPointX, endPointY])
+      // lastObj.moveVertex(2, [endPointX, startPointY])
+      // lastObj.moveVertex(3, currentCoor)
     }
   
     setDrawStatus();
@@ -235,7 +258,14 @@ canvas.addEventListener('mouseup', (e) => {
 
         lastObj.moveVertex(lastObj.vertices.length - 1, currentCoor);
         lastObj.addVertex(currentCoor, [0, 0, 0, 1]);
+    } else if (drawState == 'square') {
 
+      lastObj.moveVertex(0, currentCoor);
+      drawState = 'square2';
+  
+    } else if (drawState == 'square2') {
+
+      drawState = '';
     }
 
     setDrawStatus();
@@ -312,6 +342,7 @@ const setPropertyDisplay = () => {
     const setter = (line, square, rectangle, polygon) => {
         sm_rectangle.style.display = rectangle;
         sm_polygon.style.display = polygon;
+        // sm_square.style.display = square;
     }
 
     if (selectedObjectId != -1) {
@@ -349,6 +380,8 @@ const drawAction = (model) => {
         objects.push(new Rectangle(objects.length));
       } else if (model == 'polygon') {
         objects.push(new Polygon(objects.length));
+      } else if (model = 'square'){
+        objects.push(new Square(objects.length));
       }
     } else {
       draw_status.innerHTML = 'Please finish drawing the previous object';
@@ -384,6 +417,11 @@ const setDrawStatus = () => {
         case 'polygon2':
             draw_status.innerHTML = 'Drawing polygon, click to add vertex or double click to finish ...';
             break;
+        case 'square':
+            draw_status.innerHTML = 'Drawing square, choose first vertex ...';
+        case 'square2':
+            draw_status.innerHTML = 'Drawing square, click to finish ...';
+
         default:
             if (selectedObjectId != -1) {
                 draw_status.innerHTML = `Modifying object ${selectedObjectId}, click center again to translate or click vertex to dilate`;
@@ -393,6 +431,8 @@ const setDrawStatus = () => {
             break;
     }
 }
+
+
 
 // SPECIAL METHOD RECTANGLE
 const sm_rectangle = document.getElementById('special-method-rectangle');
