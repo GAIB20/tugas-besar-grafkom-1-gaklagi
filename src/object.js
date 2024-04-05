@@ -153,6 +153,81 @@ class Model {
 
 }
 
+class Line extends Model {
+  constructor(id) {
+    super(id);
+    this.type = 'Line';
+    this.vertices.push(new Point([0, 0], [0, 0, 0, 1], 0));
+    this.vertices.push(new Point([0, 0], [0, 0, 0, 1], 1));
+  }
+
+  setAtrributes = (id, vertices, angle, centroid) => {
+    this.id = id;
+
+    let count = 0;
+    this.vertices.forEach(v => {
+      v.coor = vertices[count].coor;
+      v.color = vertices[count].color;
+      count++;
+    });
+    this.angle = angle;
+    this.centroid.coor = centroid.coor;
+    this.centroid.color = centroid.color;
+    this.centroid.id = centroid.id;
+    this.centroid.isCentroid = centroid.isCentroid;
+  }
+
+  getLength = () => {
+    return dist(this.vertices[0].coor, this.vertices[1].coor)
+  }
+
+  setLength = (length) => {
+    let dx = this.vertices[1].coor[0] - this.vertices[0].coor[0];
+    let dy = this.vertices[1].coor[1] - this.vertices[0].coor[1];
+    let angle = Math.atan2(dy, dx);
+    let x0 = this.centroid.coor[0] - length * Math.cos(angle)/2;
+    let y0 = this.centroid.coor[1] - length * Math.sin(angle)/2;
+    let x1 = this.centroid.coor[0] + length * Math.cos(angle)/2;
+    let y1 = this.centroid.coor[1] + length * Math.sin(angle)/2;
+    this.vertices[0].coor = [x0, y0];
+    this.vertices[1].coor = [x1, y1];
+
+    console.log(`x1: ${this.vertices[1].coor[0]}, y1: ${this.vertices[1].coor[1]}`);
+    console.log(`x2: ${this.vertices[0].coor[0]}, y2: ${this.vertices[0].coor[1]}`);
+    console.log(this.getLength(), length);
+  }
+
+  render = (gl) => {
+    const verticesCoor = [];
+    const verticesColors = [];
+
+    this.vertices.forEach((v) => {
+      verticesCoor.push(v.coor);
+      verticesColors.push(v.color);
+    });
+
+    const vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(verticesCoor), gl.STATIC_DRAW);
+    
+    const vPosition = gl.getAttribLocation(program, 'vPosition');
+    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition);
+
+    var cBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(verticesColors), gl.STATIC_DRAW);
+
+    const vColor = gl.getAttribLocation(program, 'vColor');
+    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
+
+    gl.drawArrays(gl.LINES, 0, verticesCoor.length);
+
+    this.renderDot(gl, vBuffer, vPosition, cBuffer, vColor)
+  }
+}
+
 class Rectangle extends Model {
     constructor(id){
       super(id);

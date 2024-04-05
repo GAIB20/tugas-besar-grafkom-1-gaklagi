@@ -47,7 +47,9 @@ canvas.addEventListener('mousemove', (e) => {
     }
       
     // DRAW NEW OBJECT
-    if (drawState == 'rectangle2') {
+    else if (drawState == 'line2') {
+      lastObj.moveVertex(1, currentCoor);
+    } else if (drawState == 'rectangle2') {
         startPointX = lastObj.vertices[0].coor[0];
         startPointY = lastObj.vertices[0].coor[1];
         endPointX = currentCoor[0];
@@ -214,6 +216,16 @@ canvas.addEventListener('mouseup', (e) => {
             objects[hoveredObjectId].vertices[selectedVertexId].isSelected = true
         } 
 
+    } else if (drawState == 'line') {
+
+        drawState = 'line2';
+        lastObj.moveVertex(0, currentCoor);
+        lastObj.moveVertex(1, currentCoor);
+  
+    } else if (drawState == 'line2') {
+
+        drawState = '';
+        
     } else if (drawState == 'rectangle') {
 
         lastObj.moveVertex(0, currentCoor);
@@ -310,12 +322,17 @@ const getActiveObject = (currentCoor) => {
 // OBJECT PROPERTY MODIFIER
 const setPropertyDisplay = () => {
     const setter = (line, square, rectangle, polygon) => {
+        sm_line.style.display = line;
         sm_rectangle.style.display = rectangle;
         sm_polygon.style.display = polygon;
     }
 
     if (selectedObjectId != -1) {
-      if (objects[selectedObjectId].getModelName() == 'Rectangle') {
+      if (objects[selectedObjectId].getModelName() == 'Line') {
+        setter('block', 'none', 'none', 'none');
+        line_length_slider.value = objects[selectedObjectId].getLength();
+        line_length_value.innerHTML = `Length: ${line_length_slider.value}`
+      } else if (objects[selectedObjectId].getModelName() == 'Rectangle') {
         setter('none', 'none', 'block', 'none');
         rectangle_length_slider.value = objects[selectedObjectId].getLength();
         rectangle_length_value.innerHTML = `Length: ${rectangle_length_slider.value}`
@@ -345,7 +362,9 @@ const drawAction = (model) => {
     if (drawState == '') {
       draw_status.innerHTML = `Drawing ${model} ...`;
       drawState = model;
-      if (model == 'rectangle') {
+      if (model == 'line') {
+        objects.push(new Line(objects.length));
+      } else if (model == 'rectangle') {
         objects.push(new Rectangle(objects.length));
       } else if (model == 'polygon') {
         objects.push(new Polygon(objects.length));
@@ -371,6 +390,12 @@ const setDrawStatus = () => {
             break;
         case 'dilation':
             draw_status.innerHTML = `Dilating object ${selectedObjectId}, click to finish ...`;
+            break;
+        case 'line':
+            draw_status.innerHTML = 'Drawing line, choose first vertex ...';
+            break;
+        case 'line2':
+            draw_status.innerHTML = 'Drawing line, click to finish ...';
             break;
         case 'rectangle':
             draw_status.innerHTML = 'Drawing rectangle, choose first vertex ...';
@@ -432,6 +457,22 @@ delete_vertex_button.addEventListener('click', (e) => {
       objects[selectedObjectId].deleteVertex(selectedVertexId)
       drawState=''
     }
+});
+
+// SPECIAL METHOD LINE
+const sm_line = document.getElementById('special-method-line');
+const line_length_slider = document.getElementById('line-length-slider');
+const line_length_value = document.getElementById('line-length-value');
+
+line_length_slider.addEventListener('input', (e) => {
+  const length = parseFloat(e.target.value);
+  line_length_value.innerHTML = `Length: ${length}`;
+  if (selectedObjectId != -1) {
+    if (objects[selectedObjectId].getModelName() == 'Line') {
+      objects[selectedObjectId].setLength(length)
+    }
+  }
+  console.log(objects[selectedObjectId].getLength());
 });
 
 // ROTATION METHOD
