@@ -49,6 +49,43 @@ canvas.addEventListener('mousemove', (e) => {
     // DRAW NEW OBJECT
     else if (drawState == 'line2') {
       lastObj.moveVertex(1, currentCoor);
+    } else if (drawState == 'square2') {
+      startPointX = lastObj.vertices[0].coor[0];
+      startPointY = lastObj.vertices[0].coor[1];
+      endPointX = currentCoor[0];
+      endPointY = currentCoor[1];
+  
+      squareSide = Math.max(dist([startPointX, startPointY], [endPointX, startPointY]), dist([startPointX, startPointY], [startPointX, endPointY]));
+  
+      if ( startPointX < endPointX ) {
+  
+        if ( startPointY < endPointY) { // Kuadran 1
+          lastObj.moveVertex(1, [startPointX, startPointY + squareSide])
+          lastObj.moveVertex(2, [startPointX + squareSide, startPointY])
+          lastObj.moveVertex(3, [startPointX + squareSide, startPointY + squareSide])
+  
+        } else { // Kuadran 4
+          lastObj.moveVertex(1, [startPointX, startPointY - squareSide])
+          lastObj.moveVertex(2, [startPointX + squareSide, startPointY])
+          lastObj.moveVertex(3, [startPointX + squareSide, startPointY - squareSide])
+  
+        }
+  
+      } else {
+
+        if ( startPointY < endPointY) { // Kuadran 2
+          lastObj.moveVertex(1, [startPointX, startPointY + squareSide])
+          lastObj.moveVertex(2, [startPointX - squareSide, startPointY])
+          lastObj.moveVertex(3, [startPointX - squareSide, startPointY + squareSide])
+  
+        } else { // Kuadran 3
+          lastObj.moveVertex(1, [startPointX, startPointY - squareSide])
+          lastObj.moveVertex(2, [startPointX - squareSide, startPointY])
+          lastObj.moveVertex(3, [startPointX - squareSide, startPointY - squareSide])
+  
+        }
+  
+      } 
     } else if (drawState == 'rectangle2') {
         startPointX = lastObj.vertices[0].coor[0];
         startPointY = lastObj.vertices[0].coor[1];
@@ -226,6 +263,13 @@ canvas.addEventListener('mouseup', (e) => {
 
         drawState = '';
         
+    } else if (drawState == 'square') {
+      lastObj.moveVertex(0, currentCoor);
+      drawState = 'square2';
+  
+    } else if (drawState == 'square2') {
+      drawState = '';
+  
     } else if (drawState == 'rectangle') {
 
         lastObj.moveVertex(0, currentCoor);
@@ -323,6 +367,7 @@ const getActiveObject = (currentCoor) => {
 const setPropertyDisplay = () => {
     const setter = (line, square, rectangle, polygon) => {
         sm_line.style.display = line;
+        sm_square.style.display = square
         sm_rectangle.style.display = rectangle;
         sm_polygon.style.display = polygon;
     }
@@ -332,6 +377,10 @@ const setPropertyDisplay = () => {
         setter('block', 'none', 'none', 'none');
         line_length_slider.value = objects[selectedObjectId].getLength();
         line_length_value.innerHTML = `Length: ${line_length_slider.value}`
+      } else if (objects[selectedObjectId].getModelName() == 'Square') {
+        setter('none', 'block', 'none', 'none');
+        square_length_slider.value = objects[selectedObjectId].getLength();
+        square_length_value.innerHTML = `Side Length: ${square_length_slider.value}`
       } else if (objects[selectedObjectId].getModelName() == 'Rectangle') {
         setter('none', 'none', 'block', 'none');
         rectangle_length_slider.value = objects[selectedObjectId].getLength();
@@ -364,6 +413,8 @@ const drawAction = (model) => {
       drawState = model;
       if (model == 'line') {
         objects.push(new Line(objects.length));
+      } else if (model == 'square') {
+        objects.push(new Square(objects.length));
       } else if (model == 'rectangle') {
         objects.push(new Rectangle(objects.length));
       } else if (model == 'polygon') {
@@ -396,6 +447,12 @@ const setDrawStatus = () => {
             break;
         case 'line2':
             draw_status.innerHTML = 'Drawing line, click to finish ...';
+            break;
+        case 'square':
+            draw_status.innerHTML = 'Drawing square, choose first vertex ...';
+            break;
+        case 'square2':
+            draw_status.innerHTML = 'Drawing square, click to finish ...';
             break;
         case 'rectangle':
             draw_status.innerHTML = 'Drawing rectangle, choose first vertex ...';
@@ -470,6 +527,22 @@ line_length_slider.addEventListener('input', (e) => {
   if (selectedObjectId != -1) {
     if (objects[selectedObjectId].getModelName() == 'Line') {
       objects[selectedObjectId].setLength(length)
+    }
+  }
+  console.log(objects[selectedObjectId].getLength());
+});
+
+// SPECIAL METHOD SQUARE
+const sm_square = document.getElementById('special-method-square');
+const square_length_slider = document.getElementById('square-length-slider');
+const square_length_value = document.getElementById('square-length-value');
+
+square_length_slider.addEventListener('input', (e) => {
+  const length = parseFloat(e.target.value);
+  square_length_value.innerHTML = `Side Length: ${length}`;
+  if (selectedObjectId != -1) {
+    if (objects[selectedObjectId].getModelName() == 'Square') {
+      objects[selectedObjectId].setLength(length);
     }
   }
   console.log(objects[selectedObjectId].getLength());

@@ -38,7 +38,17 @@ function loadObjectsFromJsonFileAndAddToCanvas(array, filePath) {
       .then(objects => {
         // Add each object to the canvas
         objects.forEach(obj => {
-            if (obj.type == 'Rectangle') {
+            if (obj.type == 'Line') {
+              const newObject = new Line(obj.id);
+              newObject.setAtrributes(obj.id, obj.vertices, obj.angle, obj.centroid);
+              array.push(newObject);
+    
+            } else if (obj.type == 'Square') {
+              const newObject = new Square(obj.id);
+              newObject.setAtrributes(obj.id, obj.vertices, obj.angle, obj.centroid);
+              array.push(newObject);
+    
+            } else if (obj.type == 'Rectangle') {
                 const newObject = new Rectangle(obj.id);
                 newObject.setAtrributes(obj.id, obj.vertices, obj.angle, obj.centroid);
                 array.push(newObject);
